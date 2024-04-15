@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Scratch Project by ID</title>
+</head>
+<body>
+    <h1>Run Scratch Project by ID</h1>
+    
+    <label for="projectIdInput">Enter Project ID:</label>
+    <input type="text" id="projectIdInput" placeholder="Enter Scratch Project ID">
+    <button onclick="runScratchProject()">Run Project</button>
+
+    <script>
+        // Function to run a Scratch project using the project ID entered by the user
+        function runScratchProject() {
+            // Get the project ID entered by the user from the input field
+            const projectId = document.getElementById('projectIdInput').value.trim();
+
+            if (!projectId) {
+                alert('Please enter a valid Scratch Project ID.');
+                return;
+            }
+
+            // URL to fetch project details
+            const apiUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
+
+            // Fetch project details
+            fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch project details. Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(projectData => {
+                console.log('Project details:', projectData);
+
+                // Check if projecttoken exists in the project details
+                const projectToken = projectData.projecttoken;
+                if (!projectToken) {
+                    throw new Error('Project token not found.');
+                }
+
+                // Use the project token to run the project (if projecttoken exists)
+                const runUrl = `https://api.scratch.mit.edu/proxy/projects/${projectId}/run/`;
+
+                // Make a POST request to run the project
+                return fetch(runUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            })
+            .then(runResponse => {
+                if (!runResponse.ok) {
+                    throw new Error(`Failed to run project. Status: ${runResponse.status}`);
+                }
+                console.log(`Project ${projectId} started successfully.`);
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+</body>
+</html>
